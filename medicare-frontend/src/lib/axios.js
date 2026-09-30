@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://lenevoassignment2-1.onrender.com/api/v1';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -27,7 +27,8 @@ axiosInstance.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest._retry &&
       originalRequest.url !== '/auth/login' &&
-      originalRequest.url !== '/auth/register'
+      originalRequest.url !== '/auth/register' &&
+      originalRequest.url !== '/auth/logout'
     ) {
       originalRequest._retry = true;
       try {
