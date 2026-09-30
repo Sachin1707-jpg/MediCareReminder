@@ -21,27 +21,19 @@ axiosInstance.interceptors.request.use(
 // Response interceptor — handle 401
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      originalRequest.url !== '/auth/login' &&
-      originalRequest.url !== '/auth/register' &&
-      originalRequest.url !== '/auth/logout'
-    ) {
-      originalRequest._retry = true;
-      try {
-        const res = await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
-        const newToken = res.data.accessToken;
-        localStorage.setItem('accessToken', newToken);
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return axiosInstance(originalRequest);
-      } catch {
-        localStorage.removeItem('accessToken');
-        window.location.href = '/login';
-      }
+  (error) => {
+    const isAuthRoute =
+      error.config?.url === '/auth/login' ||
+      error.config?.url === '/auth/register' ||
+      error.config?.url === '/auth/logout';
+
+    if (error.response?.status === 401 && !isAuthRoute) {
+      // Token expired or invalid — clear session and redirect
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );
